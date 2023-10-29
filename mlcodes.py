@@ -145,6 +145,61 @@ print(confusion_matrix(y_test, y_test_pred))
 
 
 ********************************************************************************************************************
+#ENSEMBLE LEARNING
+import numpy as np
+import pandas as pd
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import mean_squared_error, r2_score
+
+# Load the Boston housing dataset
+data = pd.read_csv("boston.csv")
+
+# Split the dataset into features and target
+X = data.drop("medv", axis=1)
+y = data["medv"]
+
+# Split the data into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Create a Random Forest Regressor
+random_forest_regressor = RandomForestRegressor(n_estimators=100, random_state=42)
+
+# Train the regressor on the training data
+random_forest_regressor.fit(X_train, y_train)
+
+# Make predictions on the test data
+y_pred = random_forest_regressor.predict(X_test)
+
+# Calculate the Mean Squared Error (MSE) and R-squared (R2) score
+mse = mean_squared_error(y_test, y_pred)
+r2 = r2_score(y_test, y_pred)
+
+# Display detailed outputs
+print("Random Forest Regressor Results:")
+print("Mean Squared Error (MSE):", mse)
+print("R-squared (R2) Score:", r2)
+
+# Feature Importance
+feature_importance = random_forest_regressor.feature_importances_
+feature_names = X.columns
+feature_importance_dict = dict(zip(feature_names, feature_importance))
+sorted_feature_importance = sorted(feature_importance_dict.items(), key=lambda x: x[1], reverse=True)
+
+print("\nFeature Importance:")
+for feature, importance in sorted_feature_importance:
+    print(f"{feature}: {importance}")
+
+# Individual Tree Predictions
+individual_tree_predictions = [estimator.predict(X_test) for estimator in random_forest_regressor.estimators_]
+
+print("\nPredictions from Individual Trees (First 5 trees):")
+for i, prediction in enumerate(individual_tree_predictions[:5]):
+    print(f"Tree {i + 1}: {prediction}")
+
+
+
+********************************************************************************************************************
 
 #DATA PREPROCESSION
 

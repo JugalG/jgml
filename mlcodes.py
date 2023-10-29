@@ -200,6 +200,196 @@ for i, prediction in enumerate(individual_tree_predictions[:5]):
 
 
 ********************************************************************************************************************
+#PCA
+import numpy as np
+from sklearn.decomposition import PCA
+from sklearn.datasets import load_breast_cancer
+from sklearn.preprocessing import StandardScaler
+# Load the Breast Cancer dataset
+data = load_breast_cancer().data
+
+# Standardize the data
+scaler = StandardScaler()
+scaled_data = scaler.fit_transform(data)
+print(scaled_data)
+# Create a PCA instance with 2 components
+n_components = 2
+pca = PCA(n_components=n_components)
+# Fit PCA to the scaled data
+pca.fit(scaled_data)
+# Transform the data to its principal components
+transformed_data = pca.transform(scaled_data)
+# Explained variance ratio
+explained_variance_ratio = pca.explained_variance_ratio_
+print("Explained Variance Ratio:", explained_variance_ratio)
+
+# Principal components
+principal_components = pca.components_
+print("Principal Components:", principal_components)
+
+********************************************************************************************************************
+#GRADIENT
+# example of plotting a gradient descent search on a one-dimensional function
+from numpy import asarray
+from numpy import arange
+from numpy.random import rand
+from matplotlib import pyplot
+
+# objective function
+def objective(x):
+	return x**2.0
+
+# derivative of objective function
+def derivative(x):
+	  # Calculate the derivative of the provided objective function
+      h = 1e-6  # A small number for numerical differentiation
+      return (objective(x + h) - objective(x - h)) / (2*h)
+
+# gradient descent algorithm
+def gradient_descent(objective, derivative, bounds, n_iter, step_size):
+	# track all solutions
+	solutions, scores = list(), list()
+	# generate an initial point
+	solution = bounds[:, 0] + rand(len(bounds)) * (bounds[:, 1] - bounds[:, 0])
+	# run the gradient descent
+	for i in range(n_iter):
+		# calculate gradient
+		gradient = derivative(solution)
+		# take a step
+		solution = solution - step_size * gradient
+		# evaluate candidate point
+		solution_eval = objective(solution)
+		# store solution
+		solutions.append(solution)
+		scores.append(solution_eval)
+		# report progress
+		print('>%d f(%s) = %.5f' % (i, solution, solution_eval))
+	return [solutions, scores]
+
+# define range for input
+bounds = asarray([[-1.0, 1.0]])
+# define the total iterations
+n_iter = 100
+# define the step size
+step_size = 0.01
+# perform the gradient descent search
+solutions, scores = gradient_descent(objective, derivative, bounds, n_iter, step_size)
+# sample input range uniformly at 0.1 increments
+inputs = arange(bounds[0,0], bounds[0,1]+0.1, 0.1)
+# compute targets
+results = objective(inputs)
+# create a line plot of input vs result
+pyplot.plot(inputs, results)
+# plot the solutions found
+pyplot.plot(solutions, scores, '.-', color='red')
+# show the plot
+pyplot.show()
+
+# Importing Libraries
+import numpy as np
+import matplotlib.pyplot as plt
+
+def mean_squared_error(y_true, y_predicted):
+	
+	# Calculating the loss or cost
+	cost = np.sum((y_true-y_predicted)**2) / len(y_true)
+	return cost
+
+# Gradient Descent Function
+# Here iterations, learning_rate, stopping_threshold
+# are hyperparameters that can be tuned
+def gradient_descent(x, y, iterations = 1000, learning_rate = 0.0001, 
+					stopping_threshold = 1e-6):
+	
+	# Initializing weight, bias, learning rate and iterations
+	current_weight = 0.1
+	current_bias = 0.01
+	iterations = iterations
+	learning_rate = learning_rate
+	n = float(len(x))
+	
+	costs = []
+	weights = []
+	previous_cost = None
+	
+	# Estimation of optimal parameters 
+	for i in range(iterations):
+		
+		# Making predictions
+		y_predicted = (current_weight * x) + current_bias
+		
+		# Calculating the current cost
+		current_cost = mean_squared_error(y, y_predicted)
+
+		# If the change in cost is less than or equal to 
+		# stopping_threshold we stop the gradient descent
+		if previous_cost and abs(previous_cost-current_cost)<=stopping_threshold:
+			break
+		
+		previous_cost = current_cost
+
+		costs.append(current_cost)
+		weights.append(current_weight)
+		
+		# Calculating the gradients
+		weight_derivative = -(2/n) * sum(x * (y-y_predicted))
+		bias_derivative = -(2/n) * sum(y-y_predicted)
+		
+		# Updating weights and bias
+		current_weight = current_weight - (learning_rate * weight_derivative)
+		current_bias = current_bias - (learning_rate * bias_derivative)
+				
+		# Printing the parameters for each 1000th iteration
+		print(f"Iteration {i+1}: Cost {current_cost}, Weight \
+		{current_weight}, Bias {current_bias}")
+	
+	
+	# Visualizing the weights and cost at for all iterations
+	plt.figure(figsize = (8,6))
+	plt.plot(weights, costs)
+	plt.scatter(weights, costs, marker='o', color='red')
+	plt.title("Cost vs Weights")
+	plt.ylabel("Cost")
+	plt.xlabel("Weight")
+	plt.show()
+	
+	return current_weight, current_bias
+
+
+def main():
+	
+	# Data
+	X = np.array([32.50234527, 53.42680403, 61.53035803, 47.47563963, 59.81320787,
+		55.14218841, 52.21179669, 39.29956669, 48.10504169, 52.55001444,
+		45.41973014, 54.35163488, 44.1640495 , 58.16847072, 56.72720806,
+		48.95588857, 44.68719623, 60.29732685, 45.61864377, 38.81681754])
+	Y = np.array([31.70700585, 68.77759598, 62.5623823 , 71.54663223, 87.23092513,
+		78.21151827, 79.64197305, 59.17148932, 75.3312423 , 71.30087989,
+		55.16567715, 82.47884676, 62.00892325, 75.39287043, 81.43619216,
+		60.72360244, 82.89250373, 97.37989686, 48.84715332, 56.87721319])
+
+	# Estimating weight and bias using gradient descent
+	estimated_weight, estimated_bias = gradient_descent(X, Y, iterations=2000)
+	print(f"Estimated Weight: {estimated_weight}\nEstimated Bias: {estimated_bias}")
+
+	# Making predictions using estimated parameters
+	Y_pred = estimated_weight*X + estimated_bias
+
+	# Plotting the regression line
+	plt.figure(figsize = (8,6))
+	plt.scatter(X, Y, marker='o', color='red')
+	plt.plot([min(X), max(X)], [min(Y_pred), max(Y_pred)], color='blue',markerfacecolor='red',
+			markersize=10,linestyle='dashed')
+	plt.xlabel("X")
+	plt.ylabel("Y")
+	plt.show()
+
+	
+if __name__=="__main__":
+	main()
+
+
+********************************************************************************************************************
 
 #DATA PREPROCESSION
 
